@@ -1,0 +1,63 @@
+
+Create Docker Image: 
+docker build -t registry.ased.io/panacea/uncc-email-header-classifier .
+docker build -t registry.ased.io/panacea/uncc-email-header-classifier:latest .
+docker push registry.ased.io/panacea/uncc-email-header-classifier:latest
+
+kubectl -n ased-k8s-panacea-development delete deployment/uncc-header-classifier
+kubectl -n ased-k8s-panacea-development get services
+kubectl -n ased-k8s-panacea-development apply -f uncc_header_classifier.yaml
+kubectl -n ased-k8s-panacea-development get pods
+kubectl -n ased-k8s-panacea-development exec -it uncc-header-classifier-6cc94b897f-sk8p7 /bin/bash
+
+
+RUN DOKCER Command: 
+docker run -d -p 0.0.0.0:9999:8888/tcp d727b1c55085(image_id)
+#note that, the container is listing at: 8888 and the request will be made at:9999, therefore 9999 will be forwarded to 8888
+
+Remove dangling images: 
+docker rmi -f $(docker images -f "dangling=true" -q)
+
+
+
+AWS Mysql server setting:
+
+conf file change:
+sudo vim /etc/mysql/mysql.conf.d/mysqld.cnf
+bind-address            = 0.0.0.0
+port            = 3306
+
+restart AWS Mysql:
+sudo /etc/init.d/mysql restart
+
+Don't forget to change the security group of AWS to all traffic
+
+Docker django code changes in running image:
+
+vim /usr/local/lib/python3.6/dist-packages/django/db/backends/mysql/operations.py 
+--> (line 146, change decode to encode)
+	query = query.encode(errors='replace')
+
+vim /usr/local/lib/python3.6/dist-packages/django/db/backends/mysql/base.py
+--> line 36, add following:
+
+	if version < (1, 3, 13):
+	    pass
+	    #raise ImproperlyConfigured('mysqlclient 1.3.13 or newer is required; you have %s.' % Database.__version__)
+
+RELOAD dont RESTART apache server in docker images:
+
+/etc/init.d/apache2 reload
+
+Commands:
+docker exec -it e9c031b1f41e(containerID) /bin/bash
+docker exec -it  /bin/bash
+tail -f /var/log/apache2/error.log
+
+service apache2 restart
+
+
+
+
+
+

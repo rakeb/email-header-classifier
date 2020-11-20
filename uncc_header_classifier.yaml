@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    deployapp: uncc-header-classifier
+  name: uncc-header-classifier
+  namespace: ased-k8s-panacea-development
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      deployapp: uncc-header-classifier
+  template:
+    metadata:
+      labels:
+        deployapp: uncc-header-classifier
+    spec:
+      securityContext:
+        runAsUser: 1001
+        fsGroup: 1001
+      imagePullSecrets:
+      - name: regcred
+      containers:
+      - image: registry.ased.io/panacea/uncc-email-header-classifier:latest
+        name: uncc-header-classifier
+        ports:
+        - containerPort: 8888
